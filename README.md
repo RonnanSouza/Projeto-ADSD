@@ -1,5 +1,5 @@
 # Projeto-ADSD
-Repositório para projeto da disciplina de Avaliação e Desempenho de Sistemas Discretos do Curso de Ciência da Computação - UFCG
+Repositório para desenvolvimento do projeto da disciplina de Avaliação e Desempenho de Sistemas Discretos do Curso de Ciência da Computação - UFCG, ministrada pelo professor Reinaldo Gomes
 
 ## O que ja foi desenvolvido
 - [x] Escalonador usando python
