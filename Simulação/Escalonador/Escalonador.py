@@ -19,7 +19,6 @@ class Escalonador:
         if self.prox_chegada1 < 1:
             if self.servidor_livre:
                 self.imprimeEvento('Chegada de Elemento da classe 1')
-                self.servidor_livre = False
                 self.iniciaAtendimento('1')
             else :
                 self.tam_fila1 += 1
@@ -29,7 +28,6 @@ class Escalonador:
         if self.prox_chegada2 < 1:
             if self.servidor_livre:
                 self.imprimeEvento('Chegada de Elemento da classe 2')
-                self.servidor_livre = False
                 self.iniciaAtendimento('2')
             else :
                 self.tam_fila2 += 1
@@ -73,11 +71,13 @@ class Escalonador:
             print 'Elemento em Atendimento: ' + str(self.elemento_atendimento)
 
     def iniciaAtendimento(self, classe):
+        self.servidor_livre = False
         self.prox_atendimento = self.geraNumero(3, 7)
         self.elemento_atendimento += 1
-        self.imprimeEvento('Atendimento do elemento ' + str(self.elemento_atendimento) + ' da classe '+ classe +' iniciado (duração de ' + str(self.prox_atendimento) + ' segundos).')
+        self.imprimeEvento('Atendimento do elemento ' + str(self.elemento_atendimento) + ' (classe '+ classe +') iniciado (duração de ' + str(self.prox_atendimento) + ' segundos).')
     
     def finalizaAtendimento(self):
+        self.servidor_livre = True
         self.imprimeEvento('Finalização do atendimento do elemento '+ str(self.elemento_atendimento))
 
 
