@@ -9,16 +9,17 @@ class Escalonador:
         self.tempo = 0
 
     def escalona(self):
+        self.clock()
         if self.prox_chegada1 < 1:
             self.tam_fila1 += 1
-            print 'Chegada na fila 1. Tamanho da fila: ' + str(self.tam_fila1) + '. Tempo: ' + str(self.tempo)
+            self.imprimeEvento('Chegada na fila 1')
             self.prox_chegada1 = self.geraNumero(1, 10)
-            print 'Proxima chegada na fila 1 agendado para : ' + str(self.tempo + self.prox_chegada1) + '. Tempo: ' + str(self.tempo)
+            self.imprimeEvento('Proxima chegada na fila 1 agendando para ' + str(self.tempo + self.prox_chegada1) + ' segundos')
         if self.prox_chegada2 < 1:
             self.tam_fila2 += 1
-            print 'Chegada na fila 2. Tamanho da fila: ' + str(self.tam_fila2) + '. Tempo: ' + str(self.tempo)
+            self.imprimeEvento('Chegada na fila 2')
             self.prox_chegada2 = self.geraNumero(1, 5)
-            print 'Proxima chegada na fila 2 agendado para : ' + str(self.tempo + self.prox_chegada2) + '. Tempo: ' + str(self.tempo)
+            self.imprimeEvento('Proxima chegada na fila 2 agendando para ' + str(self.tempo + self.prox_chegada2) + ' segundos')
 
     def geraNumero(self, inicio, fim):
         return randint(inicio, fim)
@@ -29,11 +30,16 @@ class Escalonador:
             self.prox_chegada1 -= 1
         if self.prox_chegada2 > 0:
             self.prox_chegada2 -= 1
-
+    
+    def imprimeEvento(self, tipo):
+        print '----EVENTO----'
+        print tipo 
+        print 'Momento do Evento: ' + str(self.tempo) + ' segundos.'
+        print 'Elementos na Fila 1: ' + str(self.tam_fila1)
+        print 'Elementos na Fila 2: ' + str(self.tam_fila2)
 
 scheduler = Escalonador()
 for i in range(10):
-    scheduler.clock()
     scheduler.escalona()
 
 
