@@ -46,7 +46,8 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             print "%s escolheu atendimento no caixa interno no instante %.2f minutos" % (nome, env.now)
             with caixaInterno.request() as caixa:
                 yield caixa
-                print "%s começou atendimento no caixa interno instante %.2f minutos" % (nome, env.now)
+                espera = chegada - env.now
+                print "%s começou atendimento no caixa interno no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
                 tempo_atendimento = random.uniform(2, 5)    
                 yield env.timeout(tempo_atendimento)
                 caixaInterno.release(caixa)
@@ -55,7 +56,8 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             print "%s escolheu atendimento no guichê no instante %.2f minutos" % (nome, env.now)
             with guicheAtendimento.request() as guiche:
                 yield guiche
-                print "%s começou atendimento no guichê no instante %.2f minutos" % (nome, env.now)
+                espera = chegada - env.now
+                print "%s começou atendimento no guichê no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
                 tempo_atendimento = random.uniform(2, 5)    
                 yield env.timeout(tempo_atendimento)
                 guicheAtendimento.release(guiche)
@@ -65,7 +67,8 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
     else:
         with caixaEletronico.request() as caixa:
             yield caixa
-            print "%s começou atendimento no caixa eletrônico no instante %.2f minutos" % (nome, env.now)
+            espera = chegada - env.now
+            print "%s começou atendimento no caixa eletrônico no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
             tempo_atendimento = random.uniform(2, 5)    
             yield env.timeout(tempo_atendimento)
             caixaEletronico.release(caixa)
