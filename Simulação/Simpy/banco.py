@@ -5,7 +5,7 @@ import random
 import simpy
 import numpy as np
 import scipy as sp
-import scipy.stats
+#import scipy.stats
 
 def finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento):
     """
@@ -52,7 +52,7 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             with caixaInterno.request() as caixa:
                 yield caixa
                 espera =  env.now - chegada
-                esperaEmFila.append(espera)
+                esperaCaixaI.append(espera)
                 print "%s começou atendimento no caixa interno no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
                 tempo_atendimento = random.uniform(10, 15)
                 respostaCaixaI.append(tempo_atendimento)    
@@ -64,7 +64,7 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             with guicheAtendimento.request() as guiche:
                 yield guiche
                 espera =  env.now - chegada
-                esperaEmFila.append(espera)
+                esperaGuiche.append(espera)
                 print "%s começou atendimento no guichê no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
                 tempo_atendimento = random.uniform(15, 30)    
                 respostaGuiche.append(tempo_atendimento)
@@ -77,7 +77,7 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
         with caixaEletronico.request() as caixa:
             yield caixa
             espera =  env.now - chegada
-            esperaEmFila.append(espera)
+            esperaCaixaE.append(espera)
             print "%s começou atendimento no caixa eletrônico no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
             tempo_atendimento = random.uniform(8, 12)    
             respostaCaixaE.append(tempo_atendimento)
@@ -110,7 +110,9 @@ def chegadaClientes(env):
         yield env.timeout(proximaChegada)
    
 
-esperaEmFila = []
+esperaCaixaE = []
+esperaCaixaI = []
+esperaGuiche = []
 filaCaixaE = []
 filaCaixaI = []
 filaGuiche = []
@@ -130,9 +132,9 @@ guicheAtendimento = simpy.Resource(env, 3)
 env.process(chegadaClientes(env))
 env.run()
 
-esperaEmFila = np.array(esperaEmFila)
-esperaMedia = esperaEmFila.mean()
-esperaDP = np.std(esperaEmFila)
+esperaCaixaE = np.array(esperaCaixaE)
+esperaCaixaI = np.array(esperaCaixaI)
+esperaGuiche = np.array(esperaGuiche)
 
 filaCaixaE = np.array(filaCaixaE)
 filaCaixaI = np.array(filaCaixaI)
@@ -147,22 +149,23 @@ utilizacaoCaixaI = np.array(utilizacaoCaixaI)
 utilizacaoGuiche = np.array(utilizacaoGuiche)
 
 print "\n\n\n########## Dados da Simulação ###########\n\n"
-print "1. Espera em fila:"
-print "Tempo médio: %.2f " % (esperaMedia)
-print "Desvio Padrão: %.2f " % (np.std(esperaEmFila))
-print "Intervalo de confiança: (%.2f , %.2f) " % (scipy.stats.norm.interval(0.95, loc=esperaMedia, scale=esperaDP))
+print "1. Tempo médio de espera em fila:"
+print "Caixa eletrônico: %.2f, com desvio padrão de %.2f" % (esperaCaixaE.mean(), np.std(esperaCaixaE))
+print "Caixa Interno: %.2f, com desvio padrão de %.2f" % (esperaCaixaI.mean(), np.std(esperaCaixaI))
+print "Guichê de Atendimento: %.2f, com desvio padrão de %.2f" % (esperaGuiche.mean(), np.std(esperaGuiche))
+#print "Intervalo de confiança: (%.2f , %.2f) " % (scipy.stats.norm.interval(0.95, loc=esperaMedia, scale=esperaDP))
 print "\n"
 print "2. Número médio de clientes em fila:"
-print "Caixa eletrônico: %.2f" % (filaCaixaE.mean())
-print "Caixa Interno: %.2f" % (filaCaixaI.mean())
-print "Guichê de Atendimento: %.2f" % (filaGuiche.mean())
+print "Caixa eletrônico: %.2f, com desvio padrão de %.2f" % (filaCaixaE.mean(), np.std(filaCaixaE))
+print "Caixa Interno: %.2f, com desvio padrão de %.2f" % (filaCaixaI.mean(), np.std(filaCaixaI))
+print "Guichê de Atendimento: %.2f, com desvio padrão de %.2f" % (filaGuiche.mean(), np.std(filaGuiche))
 print "\n"
 print "3. Tempo de Médio de Resposta:"
-print "Caixa eletrônico: %.2f" % (respostaCaixaE.mean())
-print "Caixa Interno: %.2f" % (respostaCaixaI.mean())
-print "Guichê de Atendimento: %.2f" % (respostaGuiche.mean())
+print "Caixa eletrônico: %.2f, com desvio padrão de %.2f" % (respostaCaixaE.mean(), np.std(respostaCaixaE))
+print "Caixa Interno: %.2f, com desvio padrão de %.2f" % (respostaCaixaI.mean(), np.std(respostaCaixaI))
+print "Guichê de Atendimento: %.2f, com desvio padrão de %.2f" % (respostaGuiche.mean(), np.std(respostaGuiche))
 print "\n"
 print "4. Utilização média:"
-print "Caixa eletrônico: %.2f" % (utilizacaoCaixaE.mean())
-print "Caixa Interno: %.2f" % (utilizacaoCaixaI.mean())
-print "Guichê de Atendimento: %.2f" % (utilizacaoGuiche.mean())
+print "Caixa eletrônico: %.2f, com desvio padrão de %.2f" % (utilizacaoCaixaE.mean(), np.std(utilizacaoCaixaE))
+print "Caixa Interno: %.2f, com desvio padrão de %.2f" % (utilizacaoCaixaI.mean(), np.std(utilizacaoCaixaI))
+print "Guichê de Atendimento: %.2f, com desvio padrão de %.2f" % (utilizacaoGuiche.mean(), np.std(utilizacaoGuiche))
