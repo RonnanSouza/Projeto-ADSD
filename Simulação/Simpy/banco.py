@@ -3,6 +3,9 @@
 
 import random
 import simpy
+import numpy as np
+import scipy as sp
+import scipy.stats
 
 def finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento):
     """
@@ -29,7 +32,9 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
     recursos disponíveis de não houver, o processo irá esperar até um recurso ser liberado para enfim iniciar 
     seu atendimento.    
     """
-    chegada = env.now
+
+    chegada = env.now  
+ 
     if not recorrente:
         print "%s chegou no instante %.2f minutos" % (nome, chegada)
     
@@ -46,9 +51,11 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             print "%s escolheu atendimento no caixa interno no instante %.2f minutos" % (nome, env.now)
             with caixaInterno.request() as caixa:
                 yield caixa
-                espera = chegada - env.now
+                espera =  env.now - chegada
+                esperaEmFila.append(espera)
                 print "%s começou atendimento no caixa interno no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
-                tempo_atendimento = random.uniform(2, 5)    
+                tempo_atendimento = random.uniform(10, 15)
+                respostaCaixaI.append(tempo_atendimento)    
                 yield env.timeout(tempo_atendimento)
                 caixaInterno.release(caixa)
                 finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento)
@@ -56,9 +63,11 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
             print "%s escolheu atendimento no guichê no instante %.2f minutos" % (nome, env.now)
             with guicheAtendimento.request() as guiche:
                 yield guiche
-                espera = chegada - env.now
+                espera =  env.now - chegada
+                esperaEmFila.append(espera)
                 print "%s começou atendimento no guichê no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
-                tempo_atendimento = random.uniform(2, 5)    
+                tempo_atendimento = random.uniform(15, 30)    
+                respostaGuiche.append(tempo_atendimento)
                 yield env.timeout(tempo_atendimento)
                 guicheAtendimento.release(guiche)
                 finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento)
@@ -67,9 +76,11 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
     else:
         with caixaEletronico.request() as caixa:
             yield caixa
-            espera = chegada - env.now
+            espera =  env.now - chegada
+            esperaEmFila.append(espera)
             print "%s começou atendimento no caixa eletrônico no instante %.2f após uma espera de %.2f" % (nome, env.now, espera)
-            tempo_atendimento = random.uniform(2, 5)    
+            tempo_atendimento = random.uniform(8, 12)    
+            respostaCaixaE.append(tempo_atendimento)
             yield env.timeout(tempo_atendimento)
             caixaEletronico.release(caixa)
             finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento)
@@ -81,14 +92,34 @@ def chegadaClientes(env):
         diferente de todos os outros clientes no sistema.
     """
     nCliente = 0
-    while True:
+    while nCliente <= 50:
+
+        filaCaixaE.append(len(caixaEletronico.queue))
+        filaCaixaI.append(len(caixaInterno.queue))
+        filaGuiche.append(len(guicheAtendimento.queue))
+
+        utilizacaoCaixaE.append((caixaEletronico.count) / 4)
+        utilizacaoCaixaI.append(caixaInterno.count)
+        utilizacaoGuiche.append((guicheAtendimento.count) / 3)
+
         nome = "Cliente "+str(nCliente)
         processoCliente = cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, False)
         env.process(processoCliente)
-        proximaChegada = random.uniform(3, 8)
+        proximaChegada = random.uniform(1, 2)
         nCliente += 1
         yield env.timeout(proximaChegada)
+   
 
+esperaEmFila = []
+filaCaixaE = []
+filaCaixaI = []
+filaGuiche = []
+respostaCaixaE = []
+respostaCaixaI = []
+respostaGuiche = []
+utilizacaoCaixaE = []
+utilizacaoCaixaI = []
+utilizacaoGuiche = []
 
 #Cria o ambiente e inicia os processos
 print "########## Sistema Bancario ###########\n"
@@ -97,4 +128,41 @@ caixaEletronico = simpy.Resource(env, 4)
 caixaInterno = simpy.Resource(env, 1)
 guicheAtendimento = simpy.Resource(env, 3)
 env.process(chegadaClientes(env))
-env.run(until=50)
+env.run()
+
+esperaEmFila = np.array(esperaEmFila)
+esperaMedia = esperaEmFila.mean()
+esperaDP = np.std(esperaEmFila)
+
+filaCaixaE = np.array(filaCaixaE)
+filaCaixaI = np.array(filaCaixaI)
+filaGuiche = np.array(filaGuiche)
+
+respostaCaixaE = np.array(respostaCaixaE)
+respostaCaixaI = np.array(respostaCaixaI)
+respostaGuiche = np.array(respostaGuiche)
+
+utilizacaoCaixaE = np.array(utilizacaoCaixaE)
+utilizacaoCaixaI = np.array(utilizacaoCaixaI)
+utilizacaoGuiche = np.array(utilizacaoGuiche)
+
+print "\n\n\n########## Dados da Simulação ###########\n\n"
+print "1. Espera em fila:"
+print "Tempo médio: %.2f " % (esperaMedia)
+print "Desvio Padrão: %.2f " % (np.std(esperaEmFila))
+print "Intervalo de confiança: (%.2f , %.2f) " % (scipy.stats.norm.interval(0.95, loc=esperaMedia, scale=esperaDP))
+print "\n"
+print "2. Número médio de clientes em fila:"
+print "Caixa eletrônico: %.2f" % (filaCaixaE.mean())
+print "Caixa Interno: %.2f" % (filaCaixaI.mean())
+print "Guichê de Atendimento: %.2f" % (filaGuiche.mean())
+print "\n"
+print "3. Tempo de Médio de Resposta:"
+print "Caixa eletrônico: %.2f" % (respostaCaixaE.mean())
+print "Caixa Interno: %.2f" % (respostaCaixaI.mean())
+print "Guichê de Atendimento: %.2f" % (respostaGuiche.mean())
+print "\n"
+print "4. Utilização média:"
+print "Caixa eletrônico: %.2f" % (utilizacaoCaixaE.mean())
+print "Caixa Interno: %.2f" % (utilizacaoCaixaI.mean())
+print "Guichê de Atendimento: %.2f" % (utilizacaoGuiche.mean())
