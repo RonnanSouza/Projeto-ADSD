@@ -3,6 +3,6 @@ Repositório para desenvolvimento do projeto da disciplina de Avaliação e Dese
 
 ## O que ja foi desenvolvido
 - [x] Escalonador usando python
-- [ ] Simulação com Framework
+- [x] Simulação com Framework
 - [ ] Simulação com Software
 - [ ] Medição
