@@ -14,12 +14,12 @@ def finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guich
     """
     reentrada = random.random()
     if reentrada < 0.1:
-        print "%s finalizou atendimento mas decide realizar outra operação no instante %.2f minutos" % (nome, env.now)
+        print "%s finalizou atendimento mas decide realizar outra operação no instante %.2f" % (nome, env.now)
         processoCliente = cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, True)
         env.process(processoCliente)
 
     else:
-        print "%s saiu do sistema no instante %.2f minutos" % (nome,env.now)
+        print "%s saiu do sistema no instante %.2f" % (nome,env.now)
 
 def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorrente):
     """
@@ -42,13 +42,13 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
     interno_externo = random.random()
     
     if interno_externo <= 0.35:
-        print "%s escolheu atendimento Interno no instante %.2f minutos" % (nome, env.now)
+        print "%s escolheu atendimento Interno no instante %.2f" % (nome, env.now)
 
         #Define a probabilidade do cliente escolher o atendimento no caixa ou os guichês
         caixa_guiche = random.random()
 
         if caixa_guiche <= 0.4:
-            print "%s escolheu atendimento no caixa interno no instante %.2f minutos" % (nome, env.now)
+            print "%s escolheu atendimento no caixa interno no instante %.2f" % (nome, env.now)
             with caixaInterno.request() as caixa:
                 yield caixa
                 espera =  env.now - chegada
@@ -60,7 +60,7 @@ def cliente(env, nome, caixaEletronico, caixaInterno, guicheAtendimento, recorre
                 caixaInterno.release(caixa)
                 finalizaAtendimento(env, nome, chegada, caixaEletronico, caixaInterno, guicheAtendimento)
         else:
-            print "%s escolheu atendimento no guichê no instante %.2f minutos" % (nome, env.now)
+            print "%s escolheu atendimento no guichê no instante %.2f" % (nome, env.now)
             with guicheAtendimento.request() as guiche:
                 yield guiche
                 espera =  env.now - chegada
